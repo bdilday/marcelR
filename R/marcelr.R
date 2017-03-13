@@ -17,9 +17,7 @@ get_pitching_stats <- function(PrimaryPosition=NULL) {
   
   # TODO: combine stints properly for pitchers
   PitchingStats <- Lahman::Pitching %>% filter(stint==1)
-  
   PitchingStats
-
 }
 
 
@@ -43,7 +41,7 @@ append_previous_years <- function(data, previous_years=3) {
   all_data <- data 
   df_list <- list()
   for (year_offset in 1:previous_years) {
-    tmp <- data %>% dplyr::mutate(yearID = yearID+year_offset)
+    tmp <- data %>% dplyr::mutate(yearID = yearID+year_offset-1)
     tmp$key <- paste0(tmp$playerID, tmp$yearID)
     df_list[[year_offset]] <- tmp
   }
