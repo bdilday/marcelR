@@ -61,7 +61,7 @@ append_previous_years <- function(data, previous_years=3) {
                 all.x=TRUE)
     
   }
-  all_data$age_adj <- sapply(all_data$Age, age_adjustment)
+  all_data$age_adj <- sapply(all_data$Age+1, age_adjustment)
 
   all_data %>% merge(seasonal_averages, 
                      by="yearID", 
