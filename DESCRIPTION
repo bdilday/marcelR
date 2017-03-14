@@ -3,7 +3,7 @@ Type: Package
 Title: Compute Marcel Projections
 Version: 1.0
 Date: 2017-03-08
-Authors@R: person("Ben", "Dilday", email = "bepd50@gmail.com",
+Authors@R: person("Ben", "Dilday", email = "ben.dilday.phd@gmail.com",
                   role = c("aut", "cre"))
 Description: Compute Marcel Projections
 License: MIT
@@ -14,3 +14,6 @@ Imports:
     tidyr (>= 0.6.1),
     lazyeval (>= 0.2.0),
     readr (>= 1.0.0)
+RoxygenNote: 6.0.1
+Encoding: UTF-8
+LazyData: true

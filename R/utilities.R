@@ -4,7 +4,18 @@ na.zero <- function(x) {
   x
 }
 
-get_seasonal_averages <- function(data) {
+get_primary_pos <- function() {
+  PrimaryPosition <- Lahman::Fielding %>%
+    group_by(playerID, yearID, POS) %>%
+    summarise(n.game = sum(G)) %>%
+    arrange(playerID, yearID, desc(n.game)) %>%
+    mutate(rr=row_number()) %>%
+    filter(rr==1) %>%
+    select(-rr) %>%
+    ungroup()
+}
+
+get_seasonal_averages_batting <- function(data) {
   
   data %>%
     dplyr::select(-stint, -lgID) %>%
@@ -15,6 +26,24 @@ get_seasonal_averages <- function(data) {
                      ss=sd(value, na.rm=TRUE),
                      zz=sum(value, na.rm=TRUE),
                      all.pa=sum(PA, na.rm=TRUE),
+                     lgAv = zz/all.pa
+    ) %>%
+    dplyr::ungroup() %>% 
+    dplyr::select(yearID, key, lgAv) %>% 
+    tidyr::spread(key, lgAv)
+}
+
+get_seasonal_averages_pitching <- function(data) {
+  
+  data %>%
+    dplyr::select(-stint, -lgID) %>%
+    tidyr::gather(key, value, -playerID, -yearID, -teamID, -IPouts, -BFP) %>%
+    dplyr::mutate(value=as.numeric(value)) %>% group_by(key, yearID) %>%
+    dplyr::summarise(n=n(),
+                     mm=mean(value, na.rm=TRUE),
+                     ss=sd(value, na.rm=TRUE),
+                     zz=sum(value, na.rm=TRUE),
+                     all.pa=sum(Ipouts, na.rm=TRUE),
                      lgAv = zz/all.pa
     ) %>%
     dplyr::ungroup() %>% 
@@ -63,7 +92,7 @@ combine_pitcher_stints <- function(data) {
                   RA9=sum(R*27)/sum(IPouts),
                   BAOpp=sum(H)/sum(BFP-BB-HBP-SH-SF),
                   BABIP=sum(H-HR)/sum(BFP-BB-HBP-SO),
-                  OBPOpp=sum(H+BB_HBP)/sum(BFP-SH), 
+                  OBPOpp=sum(H+BB+HBP)/sum(BFP-SH), 
                   uFIP=sum(13*HR + 3*(BB+HBP) - 2*SO)/sum(IPouts/3)
     )
   grouped_data %>% dplyr::ungroup() %>% dplyr::filter(stint==1)

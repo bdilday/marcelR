@@ -12,21 +12,25 @@ get_primary_pos <- function() {
 
 get_pitching_stats <- function(PrimaryPosition=NULL) {
   if (is.null(PrimaryPosition)) {
-    PrimaryPosition <- marcelR:::get_primary_pos()
+    PrimaryPosition <- get_primary_pos()
   }
   
-  # TODO: combine stints properly for pitchers
-  PitchingStats <- Lahman::Pitching %>% filter(stint==1)
-  PitchingStats
+  PitchingStats <- combine_pitcher_stints(Lahman::Pitching) %>% 
+    merge(PrimaryPosition %>%
+            select(playerID, yearID, POS),
+          by=c("playerID", "yearID"))
+  
+  PitchingStats$Age <- get_age(PitchingStats)
+  PitchingStats %>% mutate(PA=BFP)
 }
 
 
 get_batting_stats <- function(PrimaryPosition=NULL) {
   if (is.null(PrimaryPosition)) {
-    PrimaryPosition <- marcelR:::get_primary_pos()
+    PrimaryPosition <- get_primary_pos()
   }
   
-  BattingStats <- marcelR:::combine_batter_stints(Lahman::battingStats()) %>% 
+  BattingStats <- combine_batter_stints(Lahman::battingStats()) %>% 
     merge(PrimaryPosition %>%
             select(playerID, yearID, POS),
           by=c("playerID", "yearID"))
@@ -82,10 +86,52 @@ age_adjustment <- function(age) {
   }
 }
 
-apply_marcel <- function(metric_av_df, metric, 
-                         ww=c(5, 4, 3), 
-                         pa_weights=c(0.5, 0.1, 0)) {
-  sw <- sum(ww)
+apply_marcel_pitching <- function(data, metric, 
+                                  metric_weights=c(3,2,1),
+                                  playing_time_weights=c(0.5, 0.1, 0)) {
+
+  sw <- sum(metric_weights)
+  
+  x_metric = 0
+  x_playing_time = 0
+  x_lgav = 0
+  proj_pt = 75 + data$GS/data$G * 105
+  
+  for (idx in seq_along(ww)) {
+    metric_key = sprintf('%s.%d', metric, idx)
+    metric_av_key = paste0(metric_key, ".SA")
+    pt_key = sprintf('%s.%d', "IPouts", idx)
+    playing_time <- na.zero(data[[pa_key]])
+    sa_value <- na.zero(data[[metric_av_key]])
+    
+    x_metric <- x_metric + na.zero(data[[metric_key]]) * ww[idx]
+    x_playing_time <- x_playing_time + playing_time * ww[idx]
+    x_av <- x_av + (sa_value * ww[idx])
+    proj_pt <- proj_pt + pa_weights[[idx]] * playing_time
+  }
+  
+  x_av <- x_av / sw
+  data.frame(playerID=data$playerID,
+             yearID=data$yearID,
+             projectedYearID=data$yearID+1,
+             age_adj=data$age_adj,
+             x_metric=x_metric,
+             x_pa=x_pa, x_lgav=x_lgav, proj_pt=proj_pt) %>%
+    mutate(num=x_av*30*sw+x_metric, 
+           denom=x_pt+30*sw,
+           proj_rate_raw=num/denom,
+           proj_rate=age_adj*proj_rate_raw,
+           proj_value=proj_pa*proj_rate)
+
+    
+}
+
+
+apply_marcel_batting <- function(data, metric, 
+                         metric_weights=c(5,4,3),
+                         playing_time_weights=c(0.5, 0.1, 0)
+                         ) {
+  sw <- sum(metric_weights)
  
   x_metric = 0
   x_pa = 0
@@ -96,20 +142,20 @@ apply_marcel <- function(metric_av_df, metric,
     metric_key = sprintf('%s.%d', metric, idx)
     metric_av_key = paste0(metric_key, ".SA")
     pa_key = sprintf('%s.%d', "PA", idx)
-    pa <- na.zero(metric_av_df[[pa_key]])
-    sa_value <- na.zero(metric_av_df[[metric_av_key]])
+    pa <- na.zero(data[[pa_key]])
+    sa_value <- na.zero(data[[metric_av_key]])
     
-    x_metric <- x_metric + na.zero(metric_av_df[[metric_key]]) * ww[idx]
+    x_metric <- x_metric + na.zero(data[[metric_key]]) * ww[idx]
     x_pa <- x_pa + pa * ww[idx]
     x_av <- x_av + (sa_value * ww[idx])
     proj_pa <- proj_pa + pa_weights[[idx]] * pa
   }
 
   x_av <- x_av / sw
-  data.frame(playerID=metric_av_df$playerID,
-             yearID=metric_av_df$yearID,
-             projectedYearID=metric_av_df$yearID+1,
-             age_adj=metric_av_df$age_adj,
+  data.frame(playerID=data$playerID,
+             yearID=data$yearID,
+             projectedYearID=data$yearID+1,
+             age_adj=data$age_adj,
              x_metric=x_metric,
              x_pa=x_pa, x_av=x_av, proj_pa=proj_pa) %>%
     mutate(num=x_av*100*sw+x_metric, 
