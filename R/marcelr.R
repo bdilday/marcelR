@@ -1,5 +1,4 @@
 
-library(dplyr)
 get_primary_pos <- function() {
   PrimaryPosition <- Lahman::Fielding %>%
     group_by(playerID, yearID, POS) %>%
@@ -62,8 +61,8 @@ append_previous_years <- function(data, previous_years=3) {
                 all.x=TRUE)
     
   }
-  all_data$age_adj <- sapply(all_data$Age+1, age_adjustment)
 
+  all_data$age_adj <- sapply(all_data$Age+1, age_adjustment)
   all_data %>% merge(seasonal_averages, 
                      by="yearID", 
                      suffixes=c("", ".SA"))

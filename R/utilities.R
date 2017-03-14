@@ -39,7 +39,6 @@ combine_batter_stints <- function(data) {
                       "H","X2B","X3B","HR",
                       "R","RBI"
                       ,"SB","CS","BB","SO","IBB","HBP","SH","SF","GIDP")
-  
   grouped_data <- sum_stints(data, columns_to_sum) %>% 
     dplyr::mutate(OB = OBP * (PA-SH), 
                   BIP=AB-SO-HR+SF, 
@@ -67,7 +66,6 @@ combine_pitcher_stints <- function(data) {
                   OBPOpp=sum(H+BB_HBP)/sum(BFP-SH), 
                   uFIP=sum(13*HR + 3*(BB+HBP) - 2*SO)/sum(IPouts/3)
     )
-  
   grouped_data %>% dplyr::ungroup() %>% dplyr::filter(stint==1)
 }
 
