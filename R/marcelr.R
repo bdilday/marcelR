@@ -1,4 +1,5 @@
 
+library(dplyr)
 get_primary_pos <- function() {
   PrimaryPosition <- Lahman::Fielding %>%
     group_by(playerID, yearID, POS) %>%

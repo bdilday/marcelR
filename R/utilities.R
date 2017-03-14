@@ -22,28 +22,51 @@ get_seasonal_averages <- function(data) {
     tidyr::spread(key, lgAv)
 }
 
-
+sum_stints <- function(data, columns_to_sum) {
+  grouped_data <- data %>% dplyr::group_by(playerID, yearID)
+  for (column in columns_to_sum) {
+    tmp <- grouped_data %>% 
+      dplyr::mutate_(var = lazyeval::interp(~sum(var, na.rm = TRUE), 
+                                           var = as.name(column)))
+    grouped_data[[column]] <- tmp$var
+  }
+  grouped_data
+}
 
 combine_batter_stints <- function(data) {
   
-  columns.to.sum <- c("G","PA","AB",
+  columns_to_sum <- c("G","PA","AB",
                       "H","X2B","X3B","HR",
                       "R","RBI"
                       ,"SB","CS","BB","SO","IBB","HBP","SH","SF","GIDP")
   
-  grouped_data <- data %>% dplyr::group_by(playerID, yearID)
-  for (column in columns.to.sum) {
-    tmp <- grouped_data %>% dplyr::mutate_(var = lazyeval::interp(~sum(var, na.rm = TRUE), 
-                                                                  var = as.name(column)))
-    grouped_data[[column]] <- tmp$var
-  }
+  grouped_data <- sum_stints(data, columns_to_sum) %>% 
+    dplyr::mutate(OB = OBP * (PA-SH), 
+                  BIP=AB-SO-HR+SF, 
+                  HOBIP=H-HR, 
+                  OBP=sum(OB)/sum(PA-SH), 
+                  SLG=sum(TB)/sum(AB),
+                  BABIP=sum(HOBIP)/sum(BIP))
   
-  grouped_data %>% dplyr::mutate(OB = OBP * (PA-SH), 
-                                 BIP=AB-SO-HR+SF, 
-                                 HOBIP=H-HR, 
-                                 OBP=sum(OB)/sum(PA-SH), 
-                                 SLG=sum(TB)/sum(AB),
-                                 BABIP=sum(HOBIP)/sum(BIP))
+  grouped_data %>% dplyr::ungroup() %>% dplyr::filter(stint==1)
+}
+
+combine_pitcher_stints <- function(data) {
+  
+  columns_to_sum <- c("W", "L" ,"G", "GS","CG",
+                      "SHO","SV","IPouts","H",
+                      "ER","HR", "BB",
+                      "SO","IBB","WP","HBP",
+                      "BK","BFP","GF","R","SH", "SF", "GIDP")
+  
+  grouped_data <- sum_stints(data, columns_to_sum) %>% 
+    dplyr::mutate(ERA = sum(ER*27)/sum(IPouts),
+                  RA9=sum(R*27)/sum(IPouts),
+                  BAOpp=sum(H)/sum(BFP-BB-HBP-SH-SF),
+                  BABIP=sum(H-HR)/sum(BFP-BB-HBP-SO),
+                  OBPOpp=sum(H+BB_HBP)/sum(BFP-SH), 
+                  uFIP=sum(13*HR + 3*(BB+HBP) - 2*SO)/sum(IPouts/3)
+    )
   
   grouped_data %>% dplyr::ungroup() %>% dplyr::filter(stint==1)
 }
