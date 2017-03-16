@@ -1,4 +1,6 @@
-#' Marcel projections for batters.
+#' Marcel projections for batters and pitchers.
 #'
-#' A dataset containing marcel projections for batters.
+#' A dataset containing marcel projections for batters & pitchers.
+#' @examples 
+#' marcels$Batting
 "marcels"

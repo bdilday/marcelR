@@ -4,6 +4,49 @@ na.zero <- function(x) {
   x
 }
 
+age_adjustment <- function(age) {
+  if (is.na(age)) {
+    1
+  } else if (age <= 0) { #johnsbi01 ?
+    1
+  } else if (age > 29) {
+    1 / (1 + 0.006 * (age-29))
+  } else if (age<29) {
+    1 + 0.003 * (29-age)
+  } else {
+    1
+  }
+}
+
+#' Age adjustment - re
+age_adjustment_reciprocal <- function(age) {
+  if (is.na(age)) {
+    1
+  } else if (age <= 0) { #johnsbi01 ?
+    1
+  } else if (age > 29) {
+    1 + 0.006 * (age-29)
+  } else if (age<29) {
+    1 / (1 + 0.003 * (29-age))
+  } else {
+    1
+  }
+}
+
+#' Get primary position
+#' 
+#' Gets primary position based on `Fielding` table from the 
+#' `Lahman` package. Uses the categories from the Lahman Fielding table 
+#' so all OF positons are collapsed into `OF`. Main use is to filter
+#' pitchers before computing seasonal averages batting stats.
+#' 
+#' @return A data frame containing playerID, yearID, primary position, 
+#' and number of games at primary position.
+#' @import dplyr
+#' @export
+#' @examples 
+#' primary_pos <- get_primary_pos()
+#' primary_pos %>% group_by(POS) %>% summarise(n=n())
 get_primary_pos <- function() {
   PrimaryPosition <- Lahman::Fielding %>%
     group_by(playerID, yearID, POS) %>%
@@ -13,42 +56,6 @@ get_primary_pos <- function() {
     filter(rr==1) %>%
     select(-rr) %>%
     ungroup()
-}
-
-get_seasonal_averages_batting <- function(data) {
-  
-  data %>%
-    dplyr::select(-stint, -lgID) %>%
-    tidyr::gather(key, value, -playerID, -yearID, -teamID, -PA) %>%
-    dplyr::mutate(value=as.numeric(value)) %>% group_by(key, yearID) %>%
-    dplyr::summarise(n=n(),
-                     mm=mean(value, na.rm=TRUE),
-                     ss=sd(value, na.rm=TRUE),
-                     zz=sum(value, na.rm=TRUE),
-                     all.pa=sum(PA, na.rm=TRUE),
-                     lgAv = zz/all.pa
-    ) %>%
-    dplyr::ungroup() %>% 
-    dplyr::select(yearID, key, lgAv) %>% 
-    tidyr::spread(key, lgAv)
-}
-
-get_seasonal_averages_pitching <- function(data) {
-  
-  data %>%
-    dplyr::select(-stint, -lgID) %>%
-    tidyr::gather(key, value, -playerID, -yearID, -teamID, -IPouts, -BFP) %>%
-    dplyr::mutate(value=as.numeric(value)) %>% group_by(key, yearID) %>%
-    dplyr::summarise(n=n(),
-                     mm=mean(value, na.rm=TRUE),
-                     ss=sd(value, na.rm=TRUE),
-                     zz=sum(value, na.rm=TRUE),
-                     all.pa=sum(Ipouts, na.rm=TRUE),
-                     lgAv = zz/all.pa
-    ) %>%
-    dplyr::ungroup() %>% 
-    dplyr::select(yearID, key, lgAv) %>% 
-    tidyr::spread(key, lgAv)
 }
 
 sum_stints <- function(data, columns_to_sum) {
@@ -62,42 +69,6 @@ sum_stints <- function(data, columns_to_sum) {
   grouped_data
 }
 
-combine_batter_stints <- function(data) {
-  
-  columns_to_sum <- c("G","PA","AB",
-                      "H","X2B","X3B","HR",
-                      "R","RBI"
-                      ,"SB","CS","BB","SO","IBB","HBP","SH","SF","GIDP")
-  grouped_data <- sum_stints(data, columns_to_sum) %>% 
-    dplyr::mutate(OB = OBP * (PA-SH), 
-                  BIP=AB-SO-HR+SF, 
-                  HOBIP=H-HR, 
-                  OBP=sum(OB)/sum(PA-SH), 
-                  SLG=sum(TB)/sum(AB),
-                  BABIP=sum(HOBIP)/sum(BIP))
-  
-  grouped_data %>% dplyr::ungroup() %>% dplyr::filter(stint==1)
-}
-
-combine_pitcher_stints <- function(data) {
-  
-  columns_to_sum <- c("W", "L" ,"G", "GS","CG",
-                      "SHO","SV","IPouts","H",
-                      "ER","HR", "BB",
-                      "SO","IBB","WP","HBP",
-                      "BK","BFP","GF","R","SH", "SF", "GIDP")
-  
-  grouped_data <- sum_stints(data, columns_to_sum) %>% 
-    dplyr::mutate(ERA = sum(ER*27)/sum(IPouts),
-                  RA9=sum(R*27)/sum(IPouts),
-                  BAOpp=sum(H)/sum(BFP-BB-HBP-SH-SF),
-                  BABIP=sum(H-HR)/sum(BFP-BB-HBP-SO),
-                  OBPOpp=sum(H+BB+HBP)/sum(BFP-SH), 
-                  uFIP=sum(13*HR + 3*(BB+HBP) - 2*SO)/sum(IPouts/3)
-    )
-  grouped_data %>% dplyr::ungroup() %>% dplyr::filter(stint==1)
-}
-
 get_age <- function(data) {
   
   tmp <- data %>%
@@ -108,32 +79,36 @@ get_age <- function(data) {
   tmp$age
 } 
 
-merge.fit.for.metric <- function(in.data.stats,
-                                 in.data.averages,
-                                 metric) {
+append_previous_years <- function(data, average_fn, previous_years=3) {
+  data$key <- paste0(data$playerID, data$yearID)
+  all_data <- data 
+  df_list <- list()
+  for (year_offset in 1:previous_years) {
+    tmp <- data %>% dplyr::mutate(yearID = yearID+year_offset-1)
+    tmp$key <- paste0(tmp$playerID, tmp$yearID)
+    df_list[[year_offset]] <- tmp
+  }
   
-  df1 <- in.data.averages %>%
-    dplyr::filter(key==metric) %>%
-    dplyr::mutate(lgAv=mm/all.pa) %>%
-    dplyr::select(yearID, lgAv)
+  seasonal_averages <- average_fn(data)
+  for(idx in 1:3) {
+    this_df = df_list[[idx]]
+    all_data <- merge(all_data, this_df,
+                      by="key",
+                      suffixes = c("",sprintf(".%d", idx)), 
+                      all.x=TRUE)
+    
+    this_sa <- average_fn(this_df)
+    seasonal_averages <- merge(seasonal_averages, this_sa,
+                               by="yearID",
+                               suffixes = c("",sprintf(".%d", idx)), 
+                               all.x=TRUE)
+    
+  }
   
-  idx.list <- c(which(grepl(sprintf('^%s$', metric), names(in.data.stats))),
-                which(grepl(sprintf('^%s\\.', metric), names(in.data.stats))),
-                which(grepl('^yearID', names(in.data.stats))),
-                which(grepl('^PA', names(in.data.stats))),
-                which(grepl('^age', names(in.data.stats))),
-                which(grepl('^playerID', names(in.data.stats)))
-  )
-  
-  df2 <-  merge(in.data.stats[,idx.list], df1, by="yearID")
-  
+  all_data %>% merge(seasonal_averages, 
+                     by="yearID", 
+                     suffixes=c("", ".SA"))
 }
 
 
-fit_projections <- function(in.data, metric) {
-  
-  ans <- lm( OBP ~ . + I(age**2) - PA.1 - PA.2-PA.3-PA - age.1 - age.2 - age.3 - yearID-1,
-             data=kk %>% mutate(lgAv=lgAv*600),
-             subset = which(in.data$yearID>=1970))
-  
-}
+
