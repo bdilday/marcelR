@@ -4,7 +4,7 @@ This package generates Marcel projections, using data from the `Lahman` package.
 
 ## Brief introduction to Marcels
 
-Marcels are a projection system for baseball, first developed by Tom Tango. It is often described as the most basic projection system. It weights a players last three seasons, regresses this to the mean, and applies an age adjustment.
+Marcels describes a projection system for baseball, first developed by Tom Tango. It is often described as the most basic projection system. It weights a players last three seasons, regresses this to the mean, and applies an age adjustment.
 
 ## Marcel data
 
