@@ -12,7 +12,7 @@ Since this is not on CRAN, it needs to be installed from github,
 
 ``` {r}
 > library(devtools)
-> install_github('bdilday/marcelR)
+> install_github('bdilday/marcelR')
 > library(marcelR)
 ```
 
