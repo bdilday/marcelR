@@ -4,14 +4,23 @@ This package generates Marcel projections, using data from the `Lahman` package.
 
 ## Brief introduction to Marcels
 
-Marcels are a projection system for baseball, first developed by Tom Tango. It is often described as the most basic projection system. It weights a players last three seasons, regresses this to the mean, and applies an age adjustment.
+Marcels describes a projection system for baseball, first developed by Tom Tango. It is often described as the most basic projection system. It weights a players last three seasons, regresses this to the mean, and applies an age adjustment.
+
+## Installing 
+
+Since this is not on CRAN, it needs to be installed from github,
+
+``` {r}
+> library(devtools)
+> install_github('bdilday/marcelR)
+> library(marcelR)
+```
 
 ## Marcel data
 
 This package includes the marcels as a set of data frames.
 
 ``` {r}
-> library(marcelR)
 > data(marcels)
 > names(marcels)
 [1] "Pitching" "Batting"  "Teams"   
