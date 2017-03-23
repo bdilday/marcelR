@@ -49,14 +49,14 @@ get_games_for_year <- function(year) {
 #' @return A data frame with projected totals aggregated at the team-season level. 
 #' Roster is taken from players that began the following year with the team.
 #' @export
-get_team_projected_batting <- function() {
+get_team_projected_batting <- function(marcels_batting) {
 
   # TODO: use actual IBB. currently estimated as 8% BB
   # TODO: include GIDP in base runs formula
   
-  projected_batting <- Lahman::Batting %>% mutate(yearID=yearID+1) %>%
+  projected_batting <- Lahman::Batting %>% 
     filter(stint==1) %>% select(playerID, yearID, teamID) %>%
-    merge(marcels$Batting, by=c("playerID","yearID"))
+    merge(marcels_batting, by=c("playerID","yearID"))
   
   team_projected_batting <- projected_batting %>%
     tidyr::gather(key, value, -playerID, -yearID, -teamID) %>%
@@ -81,16 +81,17 @@ get_team_projected_batting <- function() {
 #' Roster is taken from players that began the *following year* with the team.
 #' 
 #' @export
-get_team_projected_pitching <- function(projected_pitching) {
-  projected_pitching <- Lahman::Pitching %>% mutate(yearID=yearID+1) %>%
+get_team_projected_pitching <- function(marcels_pitching) {
+  
+  projected_pitching <- Lahman::Pitching %>% 
     filter(stint==1) %>% select(playerID, yearID, teamID) %>%
-    merge(marcels$Pitching, by=c("playerID","yearID"))
-
-team_projected_pitching <- projected_pitching %>%
-  tidyr::gather(key, value, -playerID, -yearID, -teamID) %>%
-  group_by(yearID ,teamID,key) %>%
-  summarise(v=sum(value)) %>% tidyr::spread(key, v) %>%
-  mutate(RA9=27*R/proj_pt) %>% group_by(yearID) %>% mutate(LG_RA_IPOUT=sum(R)/sum(proj_pt))
+    merge(marcels_pitching, by=c("playerID","yearID"))
+  
+  team_projected_pitching <- projected_pitching %>%
+    tidyr::gather(key, value, -playerID, -yearID, -teamID) %>%
+    group_by(yearID ,teamID,key) %>%
+    summarise(v=sum(value)) %>% tidyr::spread(key, v) %>%
+    mutate(RA9=27*R/proj_pt) %>% group_by(yearID) %>% mutate(LG_RA_IPOUT=sum(R)/sum(proj_pt))
 }
 
 
@@ -100,14 +101,15 @@ team_projected_pitching <- projected_pitching %>%
 #' 
 #' @seealso \code{\link{get_team_projected_pitching}, \link{get_team_projected_batting}}
 #' @export
-get_team_projected_wins <- function(team_projected_batting=NULL, team_projected_pitching=NULL) {
+get_team_projected_wins <- function(team_projected_batting=NULL, marcels_batting=NULL,
+                                    team_projected_pitching=NULL, marcels_pitching=NULL) {
   
   if (is.null(team_projected_batting)) {
-    team_projected_batting <- get_team_projected_batting()
+    team_projected_batting <- get_team_projected_batting(marcels_batting)
   }
   
   if (is.null(team_projected_pitching)) {
-    team_projected_pitching <- get_team_projected_pitching()
+    team_projected_pitching <- get_team_projected_pitching(marcels_pitching)
   }
   
   team_projections <- team_projected_batting %>%

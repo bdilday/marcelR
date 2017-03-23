@@ -28,15 +28,17 @@ export_marcels <- function(output_dir="../data",
                                            previous_years = 3))
   
   mcl <- dplyr::tbl_df(apply_marcel_batting(b, "HR", age_adjustment))
-  marcels_batting <- mcl %>% dplyr::select(playerID, yearID, proj_pa)
+  marcels_batting <- mcl %>% 
+    dplyr::select(playerID, yearID=projectedYearID, proj_pa) 
+  
   for (stat_name in stats_to_project_batting) {
     if ( stat_name %in% c("SO", "CS") ) {
       age_fun <- age_adjustment_reciprocal
     } else {
       age_fun <- age_adjustment
     }
-    mcl <- dplyr::tbl_df(apply_marcel_batting(b, stat_name, age_adjustment))
-    mcl %>% dplyr::select(playerID, yearID, proj_pa, proj_value)
+    mcl <- dplyr::tbl_df(apply_marcel_batting(b, stat_name, age_fun))
+    mcl %>% dplyr::select(playerID, yearID=projectedYearID, proj_pa, proj_value)
     marcels_batting[[stat_name]] <- mcl$proj_value
   }
 
@@ -47,7 +49,8 @@ export_marcels <- function(output_dir="../data",
               previous_years=3))
   
   mcl <- dplyr::tbl_df(apply_marcel_pitching(b, "H", age_adjustment))
-  marcels_pitching <- mcl %>% dplyr::select(playerID, yearID, proj_pt)
+  marcels_pitching <- mcl %>% 
+    dplyr::select(playerID, yearID=projectedYearID, proj_pt)
   for (stat_name in stats_to_project_pitching) {
     if ( stat_name %in% c("SO") ) {
       age_fun <- age_adjustment
@@ -55,11 +58,14 @@ export_marcels <- function(output_dir="../data",
       age_fun <- age_adjustment_reciprocal
     }
     mcl <- dplyr::tbl_df(apply_marcel_pitching(b, stat_name, age_fun))
-    mcl %>% select(playerID, yearID, proj_pt, proj_value)
+    mcl %>% select(playerID, yearID=projectedYearID, proj_pt, proj_value)
     marcels_pitching[[stat_name]] <- mcl$proj_value
   }
   
-  marcels_teams <- dplyr::tbl_df(get_team_projected_wins())
+  marcels_teams <- dplyr::tbl_df(
+    get_team_projected_wins(marcels_batting=marcels_batting, 
+                            marcels_pitching=marcels_pitching)
+    )
   marcels <- list(Pitching=marcels_pitching, Batting=marcels_batting, Teams=marcels_teams)
   save(marcels, file=paste(output_dir, output_file, sep='/'))
 }
