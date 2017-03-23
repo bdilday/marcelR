@@ -168,10 +168,10 @@ standings_pretty_print_div <- function(standings, lg_id, div_id) {
   }
   
   datum <- div_standings[1,]
-  s <- '--------------- \n'
+  s <- '------------------------------------------\n'
   cat(s)
-  cat(sprintf(' %s %s %d \n', lg_id, div_str, datum$yearID))
-  cat('--------------- \n')
+  cat(sprintf(' %s %s %d - Marcel projected record \n', lg_id, div_str, datum$yearID))
+  cat('------------------------------------------\n')
   s= sprintf('    | team |    W |    L |  Wpct |    R |   RA\n')
   cat(s)
   s <-        '----------------------------------------------\n'
