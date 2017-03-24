@@ -10,9 +10,9 @@ age_adjustment <- function(age) {
   } else if (age <= 0) { #johnsbi01 ?
     1
   } else if (age > 29) {
-    1 / (1 + 0.006 * (age-29))
+    1 /(1 + 0.003 * (age-29))
   } else if (age<29) {
-    1 + 0.003 * (29-age)
+    1 + 0.006 * (29-age)
   } else {
     1
   }
@@ -25,9 +25,9 @@ age_adjustment_reciprocal <- function(age) {
   } else if (age <= 0) { #johnsbi01 ?
     1
   } else if (age > 29) {
-    1 + 0.006 * (age-29)
+    1 + 0.003 * (age-29)
   } else if (age<29) {
-    1 / (1 + 0.003 * (29-age))
+    1/(1 + 0.006 * (29-age))
   } else {
     1
   }
