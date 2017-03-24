@@ -151,7 +151,7 @@ get_team_projected_wins <- function(team_projected_batting=NULL, marcels_batting
   
 }
 
-
+#' @export
 standings_pretty_print_div <- function(standings, lg_id, div_id) {
  
   div_lookup <- list(E='East', W='West', C='Central')
@@ -186,6 +186,7 @@ standings_pretty_print_div <- function(standings, lg_id, div_id) {
   }
 }
 
+#' @export
 get_standings <- function(marcels_team, season) {
   standings <- marcels_team %>% 
     filter(yearID==season) %>% 
@@ -195,6 +196,7 @@ get_standings <- function(marcels_team, season) {
     ungroup() 
 }
 
+#' @export
 standings_pretty_print <- function(marcels_team, season) {
   standings <- get_standings(marcels_team, season)
   
