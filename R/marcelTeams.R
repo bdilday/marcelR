@@ -46,15 +46,17 @@ get_games_for_year <- function(year) {
 
 #' Get team projected batting
 #' 
+#' @param marcels_batting A data frame containing batting projections
+#' @param roster A data frame containing roster. It must have playerID and teamID columns.
 #' @return A data frame with projected totals aggregated at the team-season level. 
 #' Roster is taken from players that began the following year with the team.
 #' @export
-get_team_projected_batting <- function(marcels_batting) {
+get_team_projected_batting <- function(marcels_batting, roster) {
 
   # TODO: use actual IBB. currently estimated as 8% BB
   # TODO: include GIDP in base runs formula
   
-  projected_batting <- Lahman::Batting %>% 
+  projected_batting <- roster %>% 
     filter(stint==1) %>% select(playerID, yearID, teamID) %>%
     merge(marcels_batting, by=c("playerID","yearID"))
   
@@ -81,9 +83,9 @@ get_team_projected_batting <- function(marcels_batting) {
 #' Roster is taken from players that began the *following year* with the team.
 #' 
 #' @export
-get_team_projected_pitching <- function(marcels_pitching) {
+get_team_projected_pitching <- function(marcels_pitching, roster) {
   
-  projected_pitching <- Lahman::Pitching %>% 
+  projected_pitching <- roster %>% 
     filter(stint==1) %>% select(playerID, yearID, teamID) %>%
     merge(marcels_pitching, by=c("playerID","yearID"))
   
@@ -102,8 +104,12 @@ get_team_projected_pitching <- function(marcels_pitching) {
 #' @seealso \code{\link{get_team_projected_pitching}, \link{get_team_projected_batting}}
 #' @export
 get_team_projected_wins <- function(team_projected_batting=NULL, marcels_batting=NULL,
-                                    team_projected_pitching=NULL, marcels_pitching=NULL) {
+                                    team_projected_pitching=NULL, marcels_pitching=NULL,
+                                    team_mapping=NULL) {
   
+  if (is.null(team_mapping)) {
+    team_mapping <- Lahman::Teams
+  }
   if (is.null(team_projected_batting)) {
     team_projected_batting <- get_team_projected_batting(marcels_batting)
   }
@@ -147,7 +153,7 @@ get_team_projected_wins <- function(team_projected_batting=NULL, marcels_batting
   team_wins <- team_wins %>% mutate(wins=as.integer(0.5 + games*wpct), losses=games-wins) %>% 
     select(yearID, teamID, BSR, CORRECTED_BSR, R, CORRECTED_R, games, wins, losses, wpct)
   
-  Lahman::Teams %>% select(yearID, teamID, lgID, divID) %>% merge(team_wins)
+  team_mapping %>% select(yearID, teamID, lgID, divID) %>% merge(team_wins)
   
 }
 
