@@ -217,3 +217,32 @@ standings_pretty_print <- function(marcels_team, season) {
   }
 
 }
+
+get_roster_batting_2017 <- function() {
+  trades <- read_csv('inst/extdata/trades2017.csv')
+  roster = Lahman::Batting %>% 
+    select(playerID, yearID, teamID) %>% 
+    mutate(yearID=yearID+1) %>% filter(yearID==2017) %>% 
+    merge(trades, by="playerID", all.x=TRUE) %>% 
+    mutate(stint=1, tx=as.character(teamID.x), 
+           ty=as.character(teamID.y), 
+           x=ifelse(is.na(ty), tx, ty)) %>% 
+    select(-tx, -ty, -teamID.x, -teamID.y) %>%
+    rename(teamID=x) %>% filter(teamID!='RET')
+}
+
+get_roster_pitching_2017 <- function() {
+  trades <- read_csv('inst/extdata/trades2017.csv')
+  roster = Lahman::Pitching %>% 
+    select(playerID, yearID, teamID) %>% 
+    mutate(yearID=yearID+1) %>% filter(yearID==2017) %>% 
+    merge(trades, by="playerID", all.x=TRUE) %>% 
+    mutate(stint=1, tx=as.character(teamID.x), 
+           ty=as.character(teamID.y), 
+           x=ifelse(is.na(ty), tx, ty)) %>% 
+    select(-tx, -ty, -teamID.x, -teamID.y) %>%
+    rename(teamID=x) %>% filter(teamID!='RET')
+}
+
+
+
