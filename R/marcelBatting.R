@@ -108,7 +108,9 @@ apply_marcel_batting <- function(data, metric, age_adjustment_fun,
   x_av_denom <- 0
   proj_pa <- 200
   pebble <- 1e-6
-
+  metric_target_num <- 0
+  metric_target_denom <- 0
+  
   for (idx in seq_along(metric_weights)) {
     metric_key <- sprintf('%s.%d', metric, idx)
     metric_av_key <- paste0(metric_key, ".SA")
@@ -121,19 +123,33 @@ apply_marcel_batting <- function(data, metric, age_adjustment_fun,
     x_av_num <- x_av_num + (sa_value * metric_weights[idx] * (pa + pebble))
     x_av_denom <- x_av_denom + (metric_weights[idx] * (pa + pebble))
     proj_pa <- proj_pa + playing_time_weights[[idx]] * pa
-  }
+    metric_target_num <- metric_target_num + (metric_weights[idx] * sa_value)
+    metric_target_denom <- metric_target_denom + metric_weights[idx]
+    }
   data$age_adj <- sapply(data$Age+1, age_adjustment_fun)
   
   x_av <- x_av_num / x_av_denom
+  metric_target <- metric_target_num / metric_target_denom
   data.frame(playerID=data$playerID,
              yearID=data$yearID,
              projectedYearID=data$yearID+1,
              age_adj=data$age_adj,
              x_metric=x_metric,
-             x_pa=x_pa, x_av=x_av, proj_pa=proj_pa) %>%
+             x_pa=x_pa, 
+             x_av=x_av, 
+             proj_pa=proj_pa,
+             metric_target=metric_target) %>%
     mutate(num=x_av*100*sw+x_metric, 
            denom=x_pa+100*sw,
            proj_rate_raw=num/denom,
            proj_rate=age_adj*proj_rate_raw,
-           proj_value=proj_pa*proj_rate)
+           proj_value=proj_pa*proj_rate) %>% 
+    group_by(yearID) %>% 
+    mutate(metric_agg = sum(proj_value)/sum(proj_pa),
+           proj_value_floating=proj_value,
+           metric_multiplier = ifelse(metric_agg>0, metric_target/metric_agg, 1),
+           proj_value=proj_value_floating*metric_multiplier) %>% 
+    ungroup()
+
 }
+

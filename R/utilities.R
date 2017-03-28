@@ -110,5 +110,7 @@ append_previous_years <- function(data, average_fn, previous_years=3) {
                      suffixes=c("", ".SA"))
 }
 
-
+get_target_value <- function(projections, metric, metric_weights) {
+  
+}
 

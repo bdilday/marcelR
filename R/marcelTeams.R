@@ -46,15 +46,17 @@ get_games_for_year <- function(year) {
 
 #' Get team projected batting
 #' 
+#' @param marcels_batting A data frame containing batting projections
+#' @param roster A data frame containing roster. It must have playerID and teamID columns.
 #' @return A data frame with projected totals aggregated at the team-season level. 
 #' Roster is taken from players that began the following year with the team.
 #' @export
-get_team_projected_batting <- function(marcels_batting) {
+get_team_projected_batting <- function(marcels_batting, roster) {
 
   # TODO: use actual IBB. currently estimated as 8% BB
   # TODO: include GIDP in base runs formula
   
-  projected_batting <- Lahman::Batting %>% 
+  projected_batting <- roster %>% 
     filter(stint==1) %>% select(playerID, yearID, teamID) %>%
     merge(marcels_batting, by=c("playerID","yearID"))
   
@@ -81,9 +83,9 @@ get_team_projected_batting <- function(marcels_batting) {
 #' Roster is taken from players that began the *following year* with the team.
 #' 
 #' @export
-get_team_projected_pitching <- function(marcels_pitching) {
+get_team_projected_pitching <- function(marcels_pitching, roster) {
   
-  projected_pitching <- Lahman::Pitching %>% 
+  projected_pitching <- roster %>% 
     filter(stint==1) %>% select(playerID, yearID, teamID) %>%
     merge(marcels_pitching, by=c("playerID","yearID"))
   
@@ -101,15 +103,24 @@ get_team_projected_pitching <- function(marcels_pitching) {
 #' 
 #' @seealso \code{\link{get_team_projected_pitching}, \link{get_team_projected_batting}}
 #' @export
-get_team_projected_wins <- function(team_projected_batting=NULL, marcels_batting=NULL,
-                                    team_projected_pitching=NULL, marcels_pitching=NULL) {
+get_team_projected_wins <- function(team_projected_batting=NULL, 
+                                    marcels_batting=NULL,
+                                    roster_batting=NULL,
+                                    team_projected_pitching=NULL, 
+                                    marcels_pitching=NULL,
+                                    roster_pitching=NULL,
+                                    team_mapping=NULL) {
   
+  if (is.null(team_mapping)) {
+    team_mapping <- Lahman::Teams
+  }
+
   if (is.null(team_projected_batting)) {
-    team_projected_batting <- get_team_projected_batting(marcels_batting)
+    team_projected_batting <- get_team_projected_batting(marcels_batting, roster_batting)
   }
   
   if (is.null(team_projected_pitching)) {
-    team_projected_pitching <- get_team_projected_pitching(marcels_pitching)
+    team_projected_pitching <- get_team_projected_pitching(marcels_pitching, roster_pitching)
   }
   
   team_projections <- team_projected_batting %>%
@@ -147,7 +158,7 @@ get_team_projected_wins <- function(team_projected_batting=NULL, marcels_batting
   team_wins <- team_wins %>% mutate(wins=as.integer(0.5 + games*wpct), losses=games-wins) %>% 
     select(yearID, teamID, BSR, CORRECTED_BSR, R, CORRECTED_R, games, wins, losses, wpct)
   
-  Lahman::Teams %>% select(yearID, teamID, lgID, divID) %>% merge(team_wins)
+  team_mapping %>% select(yearID, teamID, lgID, divID) %>% merge(team_wins)
   
 }
 
@@ -208,3 +219,32 @@ standings_pretty_print <- function(marcels_team, season) {
   }
 
 }
+
+get_roster_batting_2017 <- function() {
+  trades <- read_csv('inst/extdata/trades2017.csv')
+  roster = Lahman::Batting %>% 
+    select(playerID, yearID, teamID) %>% 
+    mutate(yearID=yearID+1) %>% filter(yearID==2017) %>% 
+    merge(trades, by="playerID", all.x=TRUE) %>% 
+    mutate(stint=1, tx=as.character(teamID.x), 
+           ty=as.character(teamID.y), 
+           x=ifelse(is.na(ty), tx, ty)) %>% 
+    select(-tx, -ty, -teamID.x, -teamID.y) %>%
+    rename(teamID=x) %>% filter(teamID!='RET')
+}
+
+get_roster_pitching_2017 <- function() {
+  trades <- read_csv('inst/extdata/trades2017.csv')
+  roster = Lahman::Pitching %>% 
+    select(playerID, yearID, teamID) %>% 
+    mutate(yearID=yearID+1) %>% filter(yearID==2017) %>% 
+    merge(trades, by="playerID", all.x=TRUE) %>% 
+    mutate(stint=1, tx=as.character(teamID.x), 
+           ty=as.character(teamID.y), 
+           x=ifelse(is.na(ty), tx, ty)) %>% 
+    select(-tx, -ty, -teamID.x, -teamID.y) %>%
+    rename(teamID=x) %>% filter(teamID!='RET')
+}
+
+
+
