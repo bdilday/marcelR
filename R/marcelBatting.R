@@ -35,8 +35,8 @@ get_batting_stats <- function(PrimaryPosition=NULL) {
   BattingStats <- combine_batter_stints(Lahman::battingStats()) %>% 
     merge(PrimaryPosition %>%
             select(playerID, yearID, POS),
-          by=c("playerID", "yearID"))
-  
+          by=c("playerID", "yearID"), all.x=TRUE)
+  BattingStats[which(is.na(BattingStats$POS)),]$POS <- 'DH'
   BattingStats$Age <- get_age(BattingStats)
   BattingStats
 }

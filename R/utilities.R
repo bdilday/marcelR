@@ -47,8 +47,15 @@ age_adjustment_reciprocal <- function(age) {
 #' @examples 
 #' primary_pos <- get_primary_pos()
 #' primary_pos %>% group_by(POS) %>% summarise(n=n())
-get_primary_pos <- function() {
-  PrimaryPosition <- Lahman::Fielding %>%
+get_primary_pos <- function(year=NULL) {
+  
+  if (is.null(year)) {
+    fielding <- Lahman::Fielding
+  } else {
+    fielding <- Lahman::Fielding %>% filter(yearID==year) 
+  }
+  
+  PrimaryPosition <- fielding %>%
     group_by(playerID, yearID, POS) %>%
     summarise(n.game = sum(G)) %>%
     arrange(playerID, yearID, desc(n.game)) %>%
