@@ -103,19 +103,24 @@ get_team_projected_pitching <- function(marcels_pitching, roster) {
 #' 
 #' @seealso \code{\link{get_team_projected_pitching}, \link{get_team_projected_batting}}
 #' @export
-get_team_projected_wins <- function(team_projected_batting=NULL, marcels_batting=NULL,
-                                    team_projected_pitching=NULL, marcels_pitching=NULL,
+get_team_projected_wins <- function(team_projected_batting=NULL, 
+                                    marcels_batting=NULL,
+                                    roster_batting=NULL,
+                                    team_projected_pitching=NULL, 
+                                    marcels_pitching=NULL,
+                                    roster_pitching=NULL,
                                     team_mapping=NULL) {
   
   if (is.null(team_mapping)) {
     team_mapping <- Lahman::Teams
   }
+
   if (is.null(team_projected_batting)) {
-    team_projected_batting <- get_team_projected_batting(marcels_batting)
+    team_projected_batting <- get_team_projected_batting(marcels_batting, roster_batting)
   }
   
   if (is.null(team_projected_pitching)) {
-    team_projected_pitching <- get_team_projected_pitching(marcels_pitching)
+    team_projected_pitching <- get_team_projected_pitching(marcels_pitching, roster_pitching)
   }
   
   team_projections <- team_projected_batting %>%

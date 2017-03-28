@@ -40,7 +40,7 @@ export_marcels <- function(output_dir="../data",
     mcl <- dplyr::tbl_df(apply_marcel_batting(b, stat_name, age_fun))
     mcl %>% dplyr::select(playerID, yearID=projectedYearID, proj_pa, proj_value)
     marcels_batting[[stat_name]] <- mcl$proj_value
-  }
+    }
 
 
   a <- get_pitching_stats()
@@ -48,7 +48,7 @@ export_marcels <- function(output_dir="../data",
               get_seasonal_averages_pitching, 
               previous_years=3))
   
-  mcl <- dplyr::tbl_df(apply_marcel_pitching(b, "H", age_adjustment))
+  mcl <- dplyr::tbl_df(apply_marcel_pitching(b, "SO", age_adjustment))
   marcels_pitching <- mcl %>% 
     dplyr::select(playerID, yearID=projectedYearID, proj_pt)
   for (stat_name in stats_to_project_pitching) {
@@ -62,10 +62,15 @@ export_marcels <- function(output_dir="../data",
     marcels_pitching[[stat_name]] <- mcl$proj_value
   }
   
+  roster_batting <- Lahman::Batting 
+  roster_pitching <- Lahman::Pitching
+  
   marcels_teams <- dplyr::tbl_df(
     get_team_projected_wins(marcels_batting=marcels_batting, 
-                            marcels_pitching=marcels_pitching)
-    )
+                            roster_batting = roster_batting,
+                            marcels_pitching=marcels_pitching,
+                            roster_pitching = roster_pitching)
+  )
   marcels <- list(Pitching=marcels_pitching, Batting=marcels_batting, Teams=marcels_teams)
   save(marcels, file=paste(output_dir, output_file, sep='/'))
 }

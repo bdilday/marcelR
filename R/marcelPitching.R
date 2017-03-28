@@ -99,7 +99,9 @@ apply_marcel_pitching <- function(data, metric, age_adjustment_fun,
   x_lgav_denom <- 0
   proj_pt <- 75 + data$GS/data$G * 105
   pebble <- 1e-6
-
+  metric_target_num <- 0
+  metric_target_denom <- 0
+  
   for (idx in seq_along(metric_weights)) {
     metric_key <- sprintf('%s.%d', metric, idx)
     metric_av_key <- paste0(metric_key, ".SA")
@@ -112,10 +114,14 @@ apply_marcel_pitching <- function(data, metric, age_adjustment_fun,
     x_lgav_num <- x_lgav_num + (sa_value * metric_weights[idx] * (playing_time + pebble))
     x_lgav_denom <- x_lgav_denom + (metric_weights[idx] * (playing_time+ pebble))
     proj_pt <- proj_pt + playing_time_weights[[idx]] * playing_time
+    metric_target_num <- metric_target_num + (metric_weights[idx] * sa_value)
+    metric_target_denom <- metric_target_denom + metric_weights[idx]
+    
   }
   
   data$age_adj <- sapply(data$Age+1, age_adjustment_fun)
   x_lgav <- x_lgav_num / x_lgav_denom
+  metric_target <- metric_target_num / metric_target_denom
   
   # 134 IPouts * 6 = 804 IPouts ~ 800 IPouts
   data.frame(playerID=data$playerID,
@@ -123,11 +129,20 @@ apply_marcel_pitching <- function(data, metric, age_adjustment_fun,
              projectedYearID=data$yearID+1,
              age_adj=data$age_adj,
              x_metric=x_metric,
-             x_pt=x_pt, x_lgav=x_lgav, proj_pt=proj_pt) %>%
+             x_pt=x_pt, 
+             x_lgav=x_lgav, 
+             proj_pt=proj_pt,
+             metric_target=metric_target) %>%
     mutate(num=x_lgav*134*sw+x_metric, 
            denom=x_pt+134*sw,
            proj_rate_raw=num/denom,
            proj_rate=age_adj*proj_rate_raw,
-           proj_value=proj_pt*proj_rate)
+           proj_value=proj_pt*proj_rate) %>%
+    group_by(yearID) %>% 
+    mutate(metric_agg = sum(proj_value)/sum(proj_pt),
+           proj_value_floating=proj_value,
+           metric_multiplier = ifelse(metric_agg>0, metric_target/metric_agg, 1),
+           proj_value=proj_value_floating*metric_multiplier) %>% 
+    ungroup()
   
 }
