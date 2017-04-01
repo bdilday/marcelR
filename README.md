@@ -16,6 +16,14 @@ Since this is not on CRAN, it needs to be installed from github,
 > library(marcelR)
 ```
 
+As of this writing the `Lahman` package has not been updated to include the 2016 season. I created an updated version, however, that can be used for generating projections for the 2017 season. It can be installed from github as well,
+
+``` {r}
+> install_github('bdilday/Lahman')
+> max(Lahman::Batting$yearID)
+[1] 2016
+```
+
 ## Marcel data
 
 This package includes the marcels as a set of data frames.
@@ -26,13 +34,13 @@ This package includes the marcels as a set of data frames.
 [1] "Pitching" "Batting"  "Teams"   
 
 > nrow(marcels$Batting)
-[1] 53570
+[1] 54730
 
 > nrow(marcels$Pitching)
 [1] 40516
 
 > nrow(marcels$Teams)
-[1] 2675
+[1] 2817
 
 ```
 
@@ -41,33 +49,34 @@ This package includes the marcels as a set of data frames.
 Here's an example of a projection, illustrated with Carlos Beltran for 2004.
 
 ``` {r}
-library(dplyr)
-marcels$Batting %>% 
- filter(yearID==2003, playerID=='beltrca01') %>% 
- print.data.frame()
-   playerID yearID proj_pa      X1B      X2B      X3B       HR       BB      HBP       SB       CS       SO
-1 beltrca01   2003   573.2 92.69494 25.20517 7.579383 22.23753 57.08782 3.342505 28.80157 3.744408 94.67932
-        SH       SF
-1 1.381183 5.493292
+> library(dplyr)
+> marcels$Batting %>% 
+     filter(yearID==2004, playerID=='beltrca01') %>% 
+     print.data.frame()
+   playerID yearID proj_pa    X1B      X2B      X3B       HR       BB      HBP       SB
+1 beltrca01   2004   573.2 93.154 25.37286 7.483096 22.70545 58.44974 3.351604 29.40546
+        CS      SO       SH       SF
+1 3.721516 92.3098 1.338349 5.604223
 ```
 
 The highest projected HR,
 
 ``` {r}
 > marcels$Batting %>% arrange(-HR) %>% select(playerID, yearID, HR)
-# A tibble: 53,570 × 3
+# A tibble: 54,730 × 3
     playerID yearID       HR
-      <fctr>  <int>    <dbl>
-1  mcgwima01   1998 50.54582
-2  mcgwima01   1999 50.48674
-3  bondsba01   2001 47.66849
-4   sosasa01   2001 46.64636
-5   sosasa01   2000 46.01002
-6  mcgwima01   1997 45.93436
-7   sosasa01   1999 45.73958
-8  griffke02   1998 44.99480
-9  bondsba01   2002 43.52437
-10 rodrial01   2002 42.50002
+      <fctr>  <dbl>    <dbl>
+1  mcgwima01   1999 52.27053
+2  mcgwima01   2000 51.93934
+3  bondsba01   2002 49.70076
+4   sosasa01   2002 48.08998
+5  mcgwima01   1998 47.17453
+6   sosasa01   2001 46.87696
+7   sosasa01   2000 46.38852
+8  griffke02   1999 45.72925
+9  bondsba01   2003 45.71398
+10  sosasa01   2003 43.79848
+# ... with 54,720 more rows
 ```
 
 ### Pitching
@@ -80,19 +89,19 @@ Lowest projected RA9 since 1950.
    arrange(RA9) %>% 
    filter(yearID>=1950) %>% 
    select(playerID, yearID, RA9)
-# A tibble: 28,840 × 3
+   # A tibble: 29,054 × 3
     playerID yearID      RA9
-      <fctr>  <int>    <dbl>
-1  gibsobo01   1968 2.394492
-2  koufasa01   1964 2.415229
-3  goodedw01   1985 2.447113
-4  koufasa01   1966 2.451025
-5  gibsobo01   1969 2.457587
-6  kershcl01   2014 2.461541
-7  koufasa01   1965 2.488301
-8  maddugr01   1995 2.509565
-9  kimbrcr01   2013 2.521602
-10 kershcl01   2015 2.526198
+      <fctr>  <dbl>    <dbl>
+1  gibsobo01   1970 2.409111
+2  goodedw01   1986 2.417237
+3  gibsobo01   1969 2.439491
+4  koufasa01   1965 2.451923
+5  koufasa01   1967 2.473709
+6  kershcl01   2015 2.480347
+7  koufasa01   1966 2.525069
+8  kershcl01   2016 2.525205
+9  kimbrcr01   2014 2.529273
+10 maddugr01   1996 2.530020
 # ... with 28,830 more rows
 ```
 
@@ -101,20 +110,20 @@ Lowest projected RA9 since 1950.
 Highest projected winning percentage since 1913,
 ``` {r}
 > marcels$Teams %>% filter(yearID>=1913) %>% arrange(-wpct) %>% select(yearID, teamID, wpct)
-# A tibble: 2,221 × 3
+# A tibble: 2,290 × 3
    yearID teamID      wpct
-    <int> <fctr>     <dbl>
-1    1944    SLN 0.6202040
-2    1928    NYA 0.6176024
-3    1942    NYA 0.6116650
-4    1998    ATL 0.6096477
-5    1932    NYA 0.6086274
-6    1939    NYA 0.6081185
-7    1913    NY1 0.6018390
-8    1970    BAL 0.6011749
-9    1938    NYA 0.6010655
-10   1943    SLN 0.5987925
-# ... with 2,211 more rows
+    <dbl> <fctr>     <dbl>
+1    1940    NYA 0.6175461
+2    1928    NYA 0.6119175
+3    1952    NY1 0.6096779
+4    1913    NY1 0.6089000
+5    1953    BRO 0.6082399
+6    1934    CHN 0.6039637
+7    2017    CHN 0.6039189
+8    2004    BOS 0.6038871
+9    1921    NYA 0.6037286
+10   1941    NYA 0.6033883
+# ... with 2,280 more rows
 ```
 
 ## Marcel computations
@@ -132,16 +141,17 @@ An example of computing marcels for batting stats,
 
 ``` {r}
 > a <- get_batting_stats()
-> b <- dplyr::tbl_df(append_previous_years(a %>% filter(POS!="P"), 
+> b <- dplyr::tbl_df(marcelR:::append_previous_years(a %>% filter(POS!="P"), 
                                            get_seasonal_averages_batting, 
                                            previous_years = 3))
-> mcl <- dplyr::tbl_df(apply_marcel_batting(b, "HR", age_adjustment))
-> mcl %>% filter(yearID==2003, playerID=='beltrca01') %>% print.data.frame()
-   playerID yearID projectedYearID age_adj x_metric x_pa       x_av proj_pa      num denom proj_rate_raw
-1 beltrca01   2003            2004   1.006      318 7938 0.02866513   573.2 352.3982  9138    0.03856403
-   proj_rate proj_value
-1 0.03879542   22.23753
-
+> mcl <- dplyr::tbl_df(apply_marcel_batting(b, "HR", marcelR:::age_adjustment))
+> mcl %>% filter(projectedYearID==2004, playerID=='beltrca01') %>% print.data.frame()
+   playerID yearID projectedYearID age_adj x_metric x_pa       x_av proj_pa metric_target
+1 beltrca01   2003            2004   1.012      318 7938 0.02867754   573.2    0.02868739
+      num denom proj_rate_raw  proj_rate proj_value metric_agg proj_value_floating
+1 352.413  9138    0.03856566 0.03902845   22.70545 0.02826497            22.37111
+  metric_multiplier
+1          1.014945
 ```
 
 ### Pitching
@@ -152,20 +162,31 @@ An example of computing marcels for pitching stats,
 
 ``` {r}
 > a <- get_pitching_stats()
-> b <- dplyr::tbl_df(append_previous_years(a %>% filter(POS=="P"), 
+> b <- dplyr::tbl_df(marcelR:::append_previous_years(a %>% filter(POS=="P"), 
               get_seasonal_averages_pitching, 
               previous_years=3))
-> mcl <- dplyr::tbl_df(apply_marcel_pitching(b, "H", age_adjustment))
-> mcl  %>% tail(1) %>% print.data.frame()
-   playerID yearID projectedYearID age_adj x_metric x_pt    x_lgav proj_pt      num denom proj_rate_raw
-1 richaga01   2016            2017       1      579 2062 0.3222663   294.2 838.1021  2866     0.2924292
-  proj_rate proj_value
-1 0.2924292   86.03268
+> mcl <- dplyr::tbl_df(apply_marcel_pitching(b, "R", marcelR:::age_adjustment_reciprocal))
+> mcl %>% filter(projectedYearID==2017) %>% mutate(RA9=27*proj_value/proj_pt) %>% arrange(RA9) %>% head(4) %>% print.data.frame()
+   playerID yearID projectedYearID age_adj x_metric x_pt    x_lgav proj_pt metric_target
+1 kershcl01   2016            2017   1.000      259 3332 0.1607082   473.3     0.1616625
+2 brittza01   2016            2017   1.003       70 1226 0.1614394   195.2     0.1616625
+3 daviswa01   2016            2017   1.009       51 1010 0.1602990   160.2     0.1616625
+4 millean01   2016            2017   1.009       87 1226 0.1621735   205.0     0.1616625
+       num denom proj_rate_raw  proj_rate proj_value metric_agg proj_value_floating
+1 388.2094  4136    0.09386108 0.09386108   44.42786  0.1616501            44.42445
+2 199.7973  2030    0.09842229 0.09871756   19.27115  0.1616501            19.26967
+3 179.8804  1814    0.09916231 0.10005477   16.03000  0.1616501            16.02877
+4 217.3875  2030    0.10708744 0.10805123   22.15220  0.1616501            22.15050
+  metric_multiplier      RA9
+1          1.000077 2.534444
+2          1.000077 2.665579
+3          1.000077 2.701686
+4          1.000077 2.917607
 ```
   
 ### Teams
 
-Team win projections aren't strictly a part of the marcel specification. Marcels are used in the follwing way to project wins.
+Team win projections aren't strictly a part of the marcel specification. In this package, marcels are used in the following way to project wins.
 
 * Specify a roster of batters and pitchers. In practice this comes from the players that actually played in the subsequent season, based on `Lahman` data.
 
