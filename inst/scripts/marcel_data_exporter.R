@@ -62,14 +62,26 @@ export_marcels <- function(output_dir="../data",
     marcels_pitching[[stat_name]] <- mcl$proj_value
   }
   
-  roster_batting <- Lahman::Batting 
-  roster_pitching <- Lahman::Pitching
+  roster_batting <- rbind(
+    Lahman::Batting %>% filter(stint==1) %>% select(playerID, yearID, stint, teamID),
+    get_roster_batting_2017()
+  )
+  roster_pitching <- rbind(
+    Lahman::Pitching %>% filter(stint==1) %>% select(playerID, yearID, stint, teamID),
+    get_roster_pitching_2017()
+  )
+
+  team_mapping <- rbind(
+    Lahman::Teams,
+    Lahman::Teams %>% filter(yearID==2016) %>% mutate(yearID=2017)
+  )
   
   marcels_teams <- dplyr::tbl_df(
     get_team_projected_wins(marcels_batting=marcels_batting, 
                             roster_batting = roster_batting,
                             marcels_pitching=marcels_pitching,
-                            roster_pitching = roster_pitching)
+                            roster_pitching = roster_pitching, 
+                            team_mapping = team_mapping)
   )
   marcels <- list(Pitching=marcels_pitching, Batting=marcels_batting, Teams=marcels_teams)
   save(marcels, file=paste(output_dir, output_file, sep='/'))

@@ -220,11 +220,83 @@ standings_pretty_print <- function(marcels_team, season) {
 
 }
 
+team_stats_print <- function(marcels_batting, roster_batting, 
+                             marcels_pitching, roster_pitching,
+                             year, team) {
+  if (year>2016) {
+    pp = get_primary_pos(2016)
+    pp$yearID = 2017
+  } else {
+    pp = get_primary_pos(year)
+  }
+  
+  batting_levels = c("C", "1B", "2B", "3B", "SS", "OF", 'DH')
+  projected_batting <- roster_batting %>% 
+    filter(yearID==year, teamID==team) %>%
+    filter(stint==1) %>% select(playerID, yearID, teamID) %>%
+    merge(marcels_batting, by=c("playerID","yearID")) %>% 
+    merge(pp, by=c("yearID", "playerID"), all.x=TRUE) %>%
+    mutate(POS=ifelse(is.na(POS), 'DH', POS)) %>%
+    merge(Lahman::Master %>% mutate(playerName=paste(nameFirst, nameLast)) %>% 
+            select(playerID, playerName), by="playerID", all.x=TRUE)
+  
+  projected_pitching <- roster_pitching %>% 
+    filter(yearID==year, teamID==team) %>%
+    filter(stint==1) %>% select(playerID, yearID, teamID) %>%
+    merge(marcels_pitching, by=c("playerID","yearID")) %>%
+    merge(pp, by=c("yearID", "playerID")) %>% 
+    merge(Lahman::Master %>% mutate(playerName=paste(nameFirst, nameLast)) %>% 
+            select(playerID, playerName), by="playerID", all.x=TRUE)
+   
+  batting_lines <- projected_batting %>% 
+    mutate(H=X1B+X2B+X3B+HR,
+           OBP=(H+BB+HBP)/(proj_pa-SH),
+           TB=X1B + 2*X2B + 3*X3B + 4*HR,
+           AB=proj_pa-BB-HBP-SH-SF,
+           AVG=H/AB,
+           SLG=TB/AB,
+           BR_A=H+BB+HBP-(0.5*0.08*BB)-HR,
+           BR_B=1.1*(1.4*TB - 0.6*H - 3*HR + 0.1*(BB+HBP-0.08*BB) + 0.9*(SB-CS)),
+           BR_C=proj_pa-BB-SF-SH-HBP+CS,
+           BR_D=HR,
+           BSR=(BR_A*BR_B)/(BR_B+BR_C) + BR_D,
+           OPS=OBP+SLG,
+           PA=round(proj_pa), AB=round(AB),
+           H=round(H), X2B=round(X2B), X3B=round(X3B), HR=round(HR),
+           SB=round(SB), CS=round(CS), 
+           AVG=round(AVG, 3),
+           OBP=round(OBP, 3),
+           SLG=round(SLG, 3),
+           OPS=round(OPS, 3),
+           BSR=round(BSR, 1)
+    )  %>% 
+    select(playerID, playerName, yearID, 
+           POS, PA, AB, H, X2B, X3B, HR, AVG, OBP, SLG, OPS, BSR) %>% 
+    mutate(POS=factor(POS, levels=batting_levels)) %>%
+    arrange(POS, -PA)
+    
+  print.data.frame(batting_lines)
+  
+  pitching_lines <- projected_pitching %>% mutate(IP=round(proj_pt/3, 1), 
+                                                  RA9=round(9*R/(IP), 3),
+                                                  SO9=round(9*SO/IP,1),
+                                                  BB9=round(9*BB/IP,1),
+                                                  R=round(R),
+                                                  SO=round(SO), BB=round(BB)) %>%
+    select(playerID, playerName, yearID, POS, IP, SO, SO9, BB, BB9, R, RA9) %>% arrange(-IP)
+  print.data.frame(pitching_lines)
+
+}
+
 get_roster_batting_2017 <- function() {
-  trades <- read_csv('inst/extdata/trades2017.csv')
+  trades <- readr::read_csv('extdata/trades2017.csv')
   roster = Lahman::Batting %>% 
+    filter(yearID==2016) %>%
+    group_by(playerID) %>% mutate(m=max(stint)) %>%
+    filter(stint==m) %>% 
+    ungroup() %>%
     select(playerID, yearID, teamID) %>% 
-    mutate(yearID=yearID+1) %>% filter(yearID==2017) %>% 
+    mutate(yearID=yearID+1) %>%  
     merge(trades, by="playerID", all.x=TRUE) %>% 
     mutate(stint=1, tx=as.character(teamID.x), 
            ty=as.character(teamID.y), 
@@ -234,10 +306,14 @@ get_roster_batting_2017 <- function() {
 }
 
 get_roster_pitching_2017 <- function() {
-  trades <- read_csv('inst/extdata/trades2017.csv')
-  roster = Lahman::Pitching %>% 
+  trades <- readr::read_csv('extdata/trades2017.csv')
+  roster = Lahman::Pitching %>%
+    filter(yearID==2016) %>% 
+    group_by(playerID) %>% mutate(m=max(stint)) %>%
+    filter(stint==m) %>% 
+    ungroup() %>%
     select(playerID, yearID, teamID) %>% 
-    mutate(yearID=yearID+1) %>% filter(yearID==2017) %>% 
+    mutate(yearID=yearID+1) %>% 
     merge(trades, by="playerID", all.x=TRUE) %>% 
     mutate(stint=1, tx=as.character(teamID.x), 
            ty=as.character(teamID.y), 
@@ -246,5 +322,8 @@ get_roster_pitching_2017 <- function() {
     rename(teamID=x) %>% filter(teamID!='RET')
 }
 
+get_sd <- function() {
+  marcels_teams %>% filter(yearID>=1913) %>% arrange(-wpct) %>% select(-BSR, -CORRECTED_BSR, -R, -CORRECTED_R) %>% merge(team_mapping %>% mutate(wpct_obs=W/(W+L), pythag=R**2/(R**2+RA**2)) %>% select(yearID, teamID, name, W, L, wpct_obs, pythag), by=c("yearID", "teamID")) %>% select(yearID, name, everything()) %>% mutate(dx=162*(wpct_obs-wpct), dy=pythag-wpct) %>% arrange(-dx)  %>% select(dx) %>% sd()
+}
 
 
