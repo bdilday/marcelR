@@ -4,14 +4,13 @@
 \alias{apply_marcel_batting}
 \title{Apply marcels for batters}
 \usage{
-apply_marcel_batting(data, metric, age_adjustment_fun, metric_weights = c(5,
-  4, 3), playing_time_weights = c(0.5, 0.1, 0))
+apply_marcel_batting(data, metric, age_adjustment_fun,
+  metric_weights = c(5, 4, 3), playing_time_weights = c(0.5, 0.1, 0))
 }
 \arguments{
-\item{data}{data.frame}
+\item{data}{A data frame with batting stats, including seasonal averages.}
 
-\item{metric}{character
-name of the metric, e.g. HR}
+\item{metric}{A string given the name of the metric to compute projections for, e.g. 'HR'}
 
 \item{age_adjustment_fun}{A callable to make the age adjustment}
 
@@ -21,7 +20,8 @@ The ith elemnt is the weight for the season i years previous. The default is the
 \item{playing_time_weights}{An array with the weights to be used for projecting playing time}
 }
 \value{
-A data frame containgMrcel projections.
+A data frame containg Marcel projections for 'metric'. The projection is given the generic
+name 'proj_value'.
 }
 \description{
 Apply marcels for batters
@@ -40,5 +40,7 @@ num denom proj_rate_raw  proj_rate proj_value
 1 352.4091  9138    0.03856523 0.03879662   22.23822
 }
 \seealso{
-\code{\link{apply_marcel_pitching}}, \code{\link{get_team_projected_batting}}
+\code{\link{apply_marcel_pitching}}, 
+\code{\link{get_team_projected_batting}}, 
+\code{\link{export_marcels}}
 }

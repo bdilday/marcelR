@@ -4,7 +4,7 @@
 \alias{get_primary_pos}
 \title{Get primary position}
 \usage{
-get_primary_pos()
+get_primary_pos(year = NULL)
 }
 \value{
 A data frame containing playerID, yearID, primary position, 

@@ -2,19 +2,19 @@
 % Please edit documentation in R/marcelPitching.R
 \name{combine_pitcher_stints}
 \alias{combine_pitcher_stints}
-\title{Combine batter stints}
+\title{Combine pitcher stints}
 \usage{
 combine_pitcher_stints(data)
 }
 \arguments{
-\item{data}{A data frame containing batting stats. Should be similar to Batting from the Lahman package.}
+\item{data}{A data frame containing pitching stats. Should be similar to Pitching from the Lahman package.}
 }
 \value{
-A data frame conating batting stats aggregated over all stints for a given player and season.
+A data frame conating pitching stats aggregated over all stints for a given player and season.
 }
 \description{
-Combine batting stats over all the stints for a given player and season.
+Combine pitching stats over all the stints for a given player and season.
 }
 \seealso{
-\code{\link{get_batting_stats}}
+\code{\link{get_pitching_stats}}
 }

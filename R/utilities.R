@@ -1,4 +1,5 @@
-
+#' @import Lahman
+#' 
 na.zero <- function(x) {
   x[is.na(x)] <- 0
   x

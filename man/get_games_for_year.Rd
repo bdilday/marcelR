@@ -11,7 +11,7 @@ get_games_for_year(year)
 }
 \description{
 Get the expected number of games for a season. This function does a very
-basic swicth-case to distinguish 3 eras; pre-1902 (140 game), 
+basic switch-case to distinguish 3 eras; pre-1902 (140 game), 
 pre-expansion (154 games), and present day (162 games).
 }
 \seealso{

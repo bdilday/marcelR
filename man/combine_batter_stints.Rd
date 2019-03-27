@@ -10,7 +10,7 @@ combine_batter_stints(data)
 \item{data}{A data frame containing batting stats. Should be similar to Batting from the Lahman package.}
 }
 \value{
-A data frame conating batting stats aggregated over all stints for a given player and season.
+A data frame containing batting stats aggregated over all stints for a given player and season.
 }
 \description{
 Combine batting stats over all the stints for a given player and season.

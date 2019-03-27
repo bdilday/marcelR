@@ -4,7 +4,12 @@
 \alias{get_team_projected_batting}
 \title{Get team projected batting}
 \usage{
-get_team_projected_batting()
+get_team_projected_batting(marcels_batting, roster)
+}
+\arguments{
+\item{marcels_batting}{A data frame containing batting projections}
+
+\item{roster}{A data frame containing roster. It must have playerID and teamID columns.}
 }
 \value{
 A data frame with projected totals aggregated at the team-season level. 
