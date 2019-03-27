@@ -4,7 +4,7 @@
 \alias{get_team_projected_pitching}
 \title{Get team projected pitching}
 \usage{
-get_team_projected_pitching(projected_pitching)
+get_team_projected_pitching(marcels_pitching, roster)
 }
 \value{
 A data frame with projected totals aggregated at the team-season level. 

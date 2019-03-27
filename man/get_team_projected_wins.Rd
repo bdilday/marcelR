@@ -5,7 +5,9 @@
 \title{Get team projected wins}
 \usage{
 get_team_projected_wins(team_projected_batting = NULL,
-  team_projected_pitching = NULL)
+  marcels_batting = NULL, roster_batting = NULL,
+  team_projected_pitching = NULL, marcels_pitching = NULL,
+  roster_pitching = NULL, team_mapping = NULL)
 }
 \value{
 A data frame with projected win total aggregated at the team-season level.

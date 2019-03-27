@@ -2,39 +2,32 @@
 % Please edit documentation in R/marcelPitching.R
 \name{apply_marcel_pitching}
 \alias{apply_marcel_pitching}
-\title{Apply marcels for batters}
+\title{Apply marcels for pitchers}
 \usage{
-apply_marcel_pitching(data, metric, age_adjustment_fun, metric_weights = c(3,
-  2, 1), playing_time_weights = c(0.5, 0.1, 0))
+apply_marcel_pitching(data, metric, age_adjustment_fun,
+  metric_weights = c(3, 2, 1), playing_time_weights = c(0.5, 0.1, 0))
 }
 \arguments{
-\item{data}{data.frame}
+\item{data}{A data frame with pitching stats, including seasonal averages.}
 
-\item{metric}{character
-name of the metric, e.g. HR}
+\item{metric}{A string given the name of the metric to compute projections for, e.g. 'HR'}
 
 \item{age_adjustment_fun}{A callable to make the age adjustment}
 
 \item{metric_weights}{An array with the weights to give to the projected stats for the previous seasons. 
-The ith elemnt is the weight for the season i years previous. The default is c(3, 2, 1).}
+The ith elemnt is the weight for the season i years previous. The default is the c(5, 4, 3).}
 
-\item{playing_time_weights}{An array with the weights to be used for projecting playing time.}
+\item{playing_time_weights}{An array with the weights to be used for projecting playing time}
 }
 \value{
-A data frame containgMrcel projections.
+A data frame containg Marcel projections for 'metric'. The projection is given the generic
+name 'proj_value'.
 }
 \description{
-Apply marcels for batters
-}
-\examples{
-a <- get_pitching_stats() \%>\% filter(yearID>=2001, yearID<=2003) \%>\% filter(POS=="P")
-b <- tbl_df(append_previous_years(a, 
-                                  get_seasonal_averages_pitching, 
-                                  previous_years = 3))
-mcl = apply_marcel_batting(b, "R", age_adjustment_reciprocal)
-mcl \%>\% filter(projectedYearID==2004, playerID=='martipe02')
-
+Apply marcels for pitchers
 }
 \seealso{
-\code{\link{apply_marcel_batting}}, \code{\link{get_team_projected_pitching}}
+\code{\link{apply_marcel_pitching}}, 
+\code{\link{get_team_projected_batting}}, 
+\code{\link{export_marcels}}
 }

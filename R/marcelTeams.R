@@ -237,7 +237,7 @@ team_stats_print <- function(marcels_batting, roster_batting,
     merge(marcels_batting, by=c("playerID","yearID")) %>% 
     merge(pp, by=c("yearID", "playerID"), all.x=TRUE) %>%
     mutate(POS=ifelse(is.na(POS), 'DH', POS)) %>%
-    merge(Lahman::Master %>% mutate(playerName=paste(nameFirst, nameLast)) %>% 
+    merge(Lahman::People %>% mutate(playerName=paste(nameFirst, nameLast)) %>% 
             select(playerID, playerName), by="playerID", all.x=TRUE)
   
   projected_pitching <- roster_pitching %>% 
@@ -245,7 +245,7 @@ team_stats_print <- function(marcels_batting, roster_batting,
     filter(stint==1) %>% select(playerID, yearID, teamID) %>%
     merge(marcels_pitching, by=c("playerID","yearID")) %>%
     merge(pp, by=c("yearID", "playerID")) %>% 
-    merge(Lahman::Master %>% mutate(playerName=paste(nameFirst, nameLast)) %>% 
+    merge(Lahman::People %>% mutate(playerName=paste(nameFirst, nameLast)) %>% 
             select(playerID, playerName), by="playerID", all.x=TRUE)
    
   batting_lines <- projected_batting %>% 

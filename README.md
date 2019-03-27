@@ -16,12 +16,12 @@ Since this is not on CRAN, it needs to be installed from github,
 > library(marcelR)
 ```
 
-As of this writing the `Lahman` package has not been updated to include the 2016 season. I created an updated version, however, that can be used for generating projections for the 2017 season. It can be installed from github as well,
+As of this writing the `Lahman` package has not been updated to include the 2017+ seasons. I created an updated version, however, that can be used for generating projections for the 2018-2019 seasons. It can be installed from github as well,
 
 ``` {r}
 > install_github('bdilday/Lahman')
 > max(Lahman::Batting$yearID)
-[1] 2016
+[1] 2018
 ```
 
 ## Marcel data
@@ -34,13 +34,13 @@ This package includes the marcels as a set of data frames.
 [1] "Pitching" "Batting"  "Teams"   
 
 > nrow(marcels$Batting)
-[1] 54730
+[1] 55987
 
 > nrow(marcels$Pitching)
-[1] 40516
+[1] 42002
 
 > nrow(marcels$Teams)
-[1] 2817
+[1] 2877
 
 ```
 
@@ -125,6 +125,8 @@ Highest projected winning percentage since 1913,
 10   1941    NYA 0.6033883
 # ... with 2,280 more rows
 ```
+
+As of this writing, the Batting and Pitching stats have been updated to 2019, but the team projectison have not (waiting on creation of updated rosters).
 
 ## Marcel computations
 
