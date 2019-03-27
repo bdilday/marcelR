@@ -33,6 +33,7 @@ get_batting_stats <- function(PrimaryPosition=NULL) {
   }
   
   BattingStats <- combine_batter_stints(Lahman::battingStats()) %>% 
+    mutate(X1B = H - X2B - X3B - HR) %>% 
     merge(PrimaryPosition %>%
             select(playerID, yearID, POS),
           by=c("playerID", "yearID"), all.x=TRUE)

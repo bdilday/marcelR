@@ -80,7 +80,7 @@ sum_stints <- function(data, columns_to_sum) {
 get_age <- function(data) {
   
   tmp <- data %>%
-    merge(Lahman::Master %>% select(playerID, birthYear), by="playerID") %>%
+    merge(Lahman::People %>% select(playerID, birthYear), by="playerID") %>%
     mutate(age = yearID-birthYear) %>%
     select(-birthYear)
   
