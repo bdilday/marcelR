@@ -7,7 +7,7 @@ Authors@R: person("Ben", "Dilday", email = "ben.dilday.phd@gmail.com",
                   role = c("aut", "cre"))
 Description: Compute Marcel Projections
 License: MIT
-Depends: R(>= 3.1.0) 
+Depends: R(>= 3.1.0)
 Imports:
     dplyr (>= 0.5.0),
     Lahman (>= 5.0-0),
