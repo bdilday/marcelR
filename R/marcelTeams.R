@@ -322,6 +322,65 @@ get_roster_pitching_2017 <- function() {
     rename(teamID=x) %>% filter(teamID!='RET')
 }
 
+
+get_roster_pitching_2019 <- function() {
+  trades = readr::read_csv("~/Downloads/war_daily_pitch.txt", 
+                           guess_max = 10000000) %>% 
+    filter(year_ID==2019) %>% 
+    filter(stint_ID==1) %>% 
+    select(player_ID, team_ID) %>% 
+    rename(bbrefID=player_ID, teamIDBR=team_ID) %>% 
+    merge(Lahman::People %>% 
+            select(playerID, bbrefID), 
+          by="bbrefID") %>% 
+    merge(Lahman::Teams %>% 
+            filter(yearID == 2018) %>% 
+            select(teamID, teamIDBR), by="teamIDBR") %>% 
+    select(-teamIDBR, -bbrefID) 
+  
+  roster = Lahman::Pitching %>%
+    group_by(playerID) %>% mutate(i=yearID+stint, m=max(yearID + stint)) %>%
+    filter(i==m) %>% 
+    ungroup() %>%
+    select(playerID, yearID, teamID) %>% 
+    mutate(yearID=2019) %>% 
+    merge(trades, by="playerID", all.x=FALSE) %>% 
+    mutate(stint=1, tx=as.character(teamID.x), 
+           ty=as.character(teamID.y), 
+           x=ifelse(is.na(ty), tx, ty)) %>% 
+    select(-tx, -ty, -teamID.x, -teamID.y) %>%
+    rename(teamID=x) %>% filter(teamID!='RET')
+}
+
+get_roster_batting_2019 <- function() {
+  trades = readr::read_csv("~/Downloads/war_daily_bat.txt", 
+                           guess_max = 10000000) %>% 
+    filter(year_ID==2019) %>% 
+    filter(stint_ID==1) %>% 
+    select(player_ID, team_ID) %>% 
+    rename(bbrefID=player_ID, teamIDBR=team_ID) %>% 
+    merge(Lahman::People %>% 
+            select(playerID, bbrefID), 
+          by="bbrefID") %>% 
+    merge(Lahman::Teams %>% 
+            filter(yearID == 2018) %>% 
+            select(teamID, teamIDBR), by="teamIDBR") %>% 
+    select(-teamIDBR, -bbrefID) 
+  
+  roster = Lahman::Batting %>%
+    group_by(playerID) %>% mutate(i=yearID+stint, m=max(yearID + stint)) %>%
+    filter(i==m) %>% 
+    ungroup() %>%
+    select(playerID, yearID, teamID) %>% 
+    mutate(yearID=2019) %>% 
+    merge(trades, by="playerID", all.x=FALSE) %>% 
+    mutate(stint=1, tx=as.character(teamID.x), 
+           ty=as.character(teamID.y), 
+           x=ifelse(is.na(ty), tx, ty)) %>% 
+    select(-tx, -ty, -teamID.x, -teamID.y) %>%
+    rename(teamID=x) %>% filter(teamID!='RET')
+}
+
 get_sd <- function() {
   marcels_teams %>% filter(yearID>=1913) %>% arrange(-wpct) %>% select(-BSR, -CORRECTED_BSR, -R, -CORRECTED_R) %>% merge(team_mapping %>% mutate(wpct_obs=W/(W+L), pythag=R**2/(R**2+RA**2)) %>% select(yearID, teamID, name, W, L, wpct_obs, pythag), by=c("yearID", "teamID")) %>% select(yearID, name, everything()) %>% mutate(dx=162*(wpct_obs-wpct), dy=pythag-wpct) %>% arrange(-dx)  %>% select(dx) %>% sd()
 }
