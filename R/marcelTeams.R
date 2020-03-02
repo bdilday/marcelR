@@ -323,10 +323,10 @@ get_roster_pitching_2017 <- function() {
 }
 
 
-get_roster_pitching_2019 <- function() {
+get_roster_pitching_X <- function(upcoming_season=2020) {
   trades = readr::read_csv("~/Downloads/war_daily_pitch.txt", 
                            guess_max = 10000000) %>% 
-    filter(year_ID==2019) %>% 
+    filter(year_ID==upcoming_season) %>% 
     filter(stint_ID==1) %>% 
     select(player_ID, team_ID) %>% 
     rename(bbrefID=player_ID, teamIDBR=team_ID) %>% 
@@ -334,7 +334,7 @@ get_roster_pitching_2019 <- function() {
             select(playerID, bbrefID), 
           by="bbrefID") %>% 
     merge(Lahman::Teams %>% 
-            filter(yearID == 2018) %>% 
+            filter(yearID == upcoming_season-1) %>% 
             select(teamID, teamIDBR), by="teamIDBR") %>% 
     select(-teamIDBR, -bbrefID) 
   
@@ -343,7 +343,7 @@ get_roster_pitching_2019 <- function() {
     filter(i==m) %>% 
     ungroup() %>%
     select(playerID, yearID, teamID) %>% 
-    mutate(yearID=2019) %>% 
+    mutate(yearID=upcoming_season) %>% 
     merge(trades, by="playerID", all.x=FALSE) %>% 
     mutate(stint=1, tx=as.character(teamID.x), 
            ty=as.character(teamID.y), 
@@ -352,10 +352,10 @@ get_roster_pitching_2019 <- function() {
     rename(teamID=x) %>% filter(teamID!='RET')
 }
 
-get_roster_batting_2019 <- function() {
+get_roster_batting_X <- function(upcoming_season) {
   trades = readr::read_csv("~/Downloads/war_daily_bat.txt", 
                            guess_max = 10000000) %>% 
-    filter(year_ID==2019) %>% 
+    filter(year_ID==upcoming_season) %>% 
     filter(stint_ID==1) %>% 
     select(player_ID, team_ID) %>% 
     rename(bbrefID=player_ID, teamIDBR=team_ID) %>% 
@@ -363,7 +363,7 @@ get_roster_batting_2019 <- function() {
             select(playerID, bbrefID), 
           by="bbrefID") %>% 
     merge(Lahman::Teams %>% 
-            filter(yearID == 2018) %>% 
+            filter(yearID == upcoming_season-1) %>% 
             select(teamID, teamIDBR), by="teamIDBR") %>% 
     select(-teamIDBR, -bbrefID) 
   
@@ -372,7 +372,7 @@ get_roster_batting_2019 <- function() {
     filter(i==m) %>% 
     ungroup() %>%
     select(playerID, yearID, teamID) %>% 
-    mutate(yearID=2019) %>% 
+    mutate(yearID=upcoming_season) %>% 
     merge(trades, by="playerID", all.x=FALSE) %>% 
     mutate(stint=1, tx=as.character(teamID.x), 
            ty=as.character(teamID.y), 

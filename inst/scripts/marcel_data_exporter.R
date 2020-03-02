@@ -18,7 +18,8 @@ export_marcels <- function(output_dir="../data",
                                               "SO", "SH", "SF"),
                            stats_to_project_pitching=c("H", "HR", 
                                                        "ER", "BB", "SO", "HBP",
-                                                       "R")
+                                                       "R"),
+                           upcoming_season=2020
                            ) {
   
 
@@ -64,16 +65,16 @@ export_marcels <- function(output_dir="../data",
   
   roster_batting <- rbind(
     Lahman::Batting %>% filter(stint==1) %>% select(playerID, yearID, stint, teamID),
-    get_roster_batting_2017()
+    get_roster_batting_X(upcoming_season)
   )
   roster_pitching <- rbind(
     Lahman::Pitching %>% filter(stint==1) %>% select(playerID, yearID, stint, teamID),
-    get_roster_pitching_2017()
+    get_roster_pitching_X(upcoming_season)
   )
 
   team_mapping <- rbind(
     Lahman::Teams,
-    Lahman::Teams %>% filter(yearID==2016) %>% mutate(yearID=2017)
+    Lahman::Teams %>% filter(yearID==2019) %>% mutate(yearID=2020)
   )
   
   marcels_teams <- dplyr::tbl_df(
